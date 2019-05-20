@@ -56,6 +56,7 @@ import fdi.ucm.server.modelComplete.ImportExportPair;
 import fdi.ucm.server.modelComplete.LoadCollection;
 import fdi.ucm.server.modelComplete.collection.CompleteCollectionAndLog;
 import fdi.ucm.server.modelComplete.collection.document.CompleteDocuments;
+import fdi.ucm.server.modelComplete.collection.grammar.CompleteGrammar;
 
 /**
  * @author Joaquin Gayoso Cabada
@@ -714,11 +715,55 @@ public class LoadCollectionMedical extends LoadCollection{
 					MaxImages=Imagenes.size();
 			}
 			
-			if (consoleDebug)
-				System.out.println(MaxImages);
+			
 			
 			int MaxUterancias=0;
+			int MaxTerm=0;
+			int MaxPos=0;
+			for (String name : supertablaUtt_list.keySet()){
+				HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_1 = SupertablaUtt.get(name);
+	            HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_2 = supertablaUtt_list.get(name);
+	            if (tabla_1.keySet().size()>MaxUterancias)
+	            	MaxUterancias=tabla_1.keySet().size();
+	            
+	            for (String utte_text : tabla_1.keySet()) {
+	            	
+	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_text = tabla_1.get(utte_text);
+	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_count = tabla_2.get(utte_text);
+	            	
+	            	for (String semanticas : semanticas_term_text.keySet()) {
+	            		HashMap<String, HashSet<String>> term_text = semanticas_term_text.get(semanticas);
+	            		HashMap<String, HashSet<String>> term_count = semanticas_term_count.get(semanticas);
+	            		
+	            		if (term_text.keySet().size()>MaxTerm)
+	            			MaxTerm=term_text.keySet().size();
+	            		
+	            		for (String termino : term_text.keySet()) {
+	            			//AQUI NO SE USA
+//							HashSet<String> text = term_text.get(termino);
+							HashSet<String> count = term_count.get(termino);
+							
+							if (count.size()>MaxPos)
+								MaxPos=count.size();
+							
+	            			}
+	            	
+	            	}
+	            }
+	            
+	            
+			}
 			
+			CompleteGrammar GramDoc=new CompleteGrammar("Report", "Grammar associated to Reports", salida.getCollection());
+			salida.getCollection().getMetamodelGrammar().add(GramDoc);
+			
+			if (consoleDebug)
+				{
+				System.out.println(MaxImages);
+				System.out.println(MaxUterancias);
+				System.out.println(MaxTerm);
+				System.out.println(MaxPos);
+				}
 			
 			
 			/**
