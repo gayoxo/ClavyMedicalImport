@@ -54,9 +54,12 @@ import com.google.gson.stream.JsonReader;
 import fdi.ucm.server.modelComplete.ImportExportDataEnum;
 import fdi.ucm.server.modelComplete.ImportExportPair;
 import fdi.ucm.server.modelComplete.LoadCollection;
+import fdi.ucm.server.modelComplete.collection.CompleteCollection;
 import fdi.ucm.server.modelComplete.collection.CompleteCollectionAndLog;
 import fdi.ucm.server.modelComplete.collection.document.CompleteDocuments;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteGrammar;
+import fdi.ucm.server.modelComplete.collection.grammar.CompleteResourceElementType;
+import fdi.ucm.server.modelComplete.collection.grammar.CompleteTextElementType;
 
 /**
  * @author Joaquin Gayoso Cabada
@@ -137,6 +140,7 @@ public class LoadCollectionMedical extends LoadCollection{
 		
 		CompleteCollectionAndLog Salida= new CompleteCollectionAndLog();
 		Salida.setLogLines(new ArrayList<String>());
+		Salida.setCollection(new CompleteCollection("Medical", "Medical Cases procesed by Metamap"));
 		
 		String Sample_File = dateEntrada.get(0);
 		String Salida_File = dateEntrada.get(1);
@@ -757,10 +761,48 @@ public class LoadCollectionMedical extends LoadCollection{
 			CompleteGrammar GramDoc=new CompleteGrammar("Report", "Grammar associated to Reports", salida.getCollection());
 			salida.getCollection().getMetamodelGrammar().add(GramDoc);
 			
+			List<CompleteTextElementType> ListUtteranceElem=new LinkedList<CompleteTextElementType>();
+			
+			CompleteTextElementType UtteranceElem=new CompleteTextElementType("Utterances", GramDoc);
+			UtteranceElem.setClassOfIterator(UtteranceElem);
+			GramDoc.getSons().add(UtteranceElem);
+			UtteranceElem.setMultivalued(true);
+			
+			ListUtteranceElem.add(UtteranceElem);
+			
+			for (int i = 0; i < MaxUterancias-1; i++) {
+				CompleteTextElementType UtteranceElemB=new CompleteTextElementType("Utterances", GramDoc);
+				GramDoc.getSons().add(UtteranceElemB);
+				UtteranceElemB.setClassOfIterator(UtteranceElem);
+				UtteranceElem.setMultivalued(true);
+				ListUtteranceElem.add(UtteranceElemB);
+			}
+			
+
+			List<CompleteResourceElementType> ListImages=new LinkedList<CompleteResourceElementType>();
+			
+
+			CompleteResourceElementType ImagesElement=new CompleteResourceElementType("Images", GramDoc);
+			ImagesElement.setClassOfIterator(ImagesElement);
+			GramDoc.getSons().add(ImagesElement);
+			ImagesElement.setMultivalued(true);
+			
+			ListImages.add(ImagesElement);
+			
+			for (int i = 0; i < MaxImages-1; i++) {
+				CompleteResourceElementType ImagesElementB=new CompleteResourceElementType("Images", GramDoc);
+				ImagesElementB.setClassOfIterator(ImagesElement);
+				GramDoc.getSons().add(ImagesElementB);
+				ImagesElementB.setMultivalued(true);
+				ListImages.add(ImagesElementB);
+			}
+			
+			
 			if (consoleDebug)
 				{
-				System.out.println(MaxImages);
-				System.out.println(MaxUterancias);
+				System.out.println(MaxImages+"-"+ListImages.size() );
+				System.out.println(MaxUterancias+"-"+ListUtteranceElem.size());
+				
 				System.out.println(MaxTerm);
 				System.out.println(MaxPos);
 				}
