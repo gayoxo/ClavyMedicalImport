@@ -12,7 +12,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,35 +19,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.w3c.dom.Element;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.SAXException;
-
 import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.stream.JsonReader;
 
 import fdi.ucm.server.modelComplete.ImportExportDataEnum;
@@ -56,7 +31,6 @@ import fdi.ucm.server.modelComplete.ImportExportPair;
 import fdi.ucm.server.modelComplete.LoadCollection;
 import fdi.ucm.server.modelComplete.collection.CompleteCollection;
 import fdi.ucm.server.modelComplete.collection.CompleteCollectionAndLog;
-import fdi.ucm.server.modelComplete.collection.document.CompleteDocuments;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteGrammar;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteResourceElementType;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteTextElementType;
@@ -796,6 +770,21 @@ public class LoadCollectionMedical extends LoadCollection{
 				ImagesElementB.setMultivalued(true);
 				ListImages.add(ImagesElementB);
 			}
+			
+
+			List<CompleteTextElementType> ListTerms=new LinkedList<CompleteTextElementType>();
+			HashMap<CompleteTextElementType, List<CompleteTextElementType>> Term_Positions=new HashMap<CompleteTextElementType, List<CompleteTextElementType>>();
+			
+			
+			CompleteTextElementType TextElement=new CompleteTextElementType("Term", GramDoc);
+			TextElement.setClassOfIterator(TextElement);
+			GramDoc.getSons().add(TextElement);
+			TextElement.setMultivalued(true);
+			ListTerms.add(TextElement);
+			
+			 List<CompleteTextElementType> Positions= new LinkedList<CompleteTextElementType>();
+			 
+			 //TODO AQUI ME QUEDE CURRANDO
 			
 			
 			if (consoleDebug)
