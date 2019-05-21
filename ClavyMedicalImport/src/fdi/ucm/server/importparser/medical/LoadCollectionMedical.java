@@ -887,13 +887,23 @@ public class LoadCollectionMedical extends LoadCollection{
 					CD.getDescription().add(RU);
 				}
 				
-				/**
-				
+
 				HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_1 = SupertablaUtt.get(name);
 	            HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_2 = supertablaUtt_list.get(name);
 	           
+	            List<String> utteran=new LinkedList<>(tabla_1.keySet());
+	            for (int i = 0; i < utteran.size(); i++) {
+	            	CompleteTextElement UteElem=new CompleteTextElement(ListUtteranceElem.get(i), utteran.get(i));
+					CD.getDescription().add(UteElem);
+					
+					HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_text = tabla_1.get(utteran.get(i));
+	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_count = tabla_2.get(utteran.get(i));
+					
+				}
+	            
 	          //  Ya tengo las utterancias
 	            
+	            /**
 	            for (String utte_text : tabla_1.keySet()) {
 	            	
 	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_text = tabla_1.get(utte_text);
@@ -919,7 +929,7 @@ public class LoadCollectionMedical extends LoadCollection{
 	            	}
 	            }
 	            
-	            */
+	*/
 			}
 			
 			//AQUI YA YA
