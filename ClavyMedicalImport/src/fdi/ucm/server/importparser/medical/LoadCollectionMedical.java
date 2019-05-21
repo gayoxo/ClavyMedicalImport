@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,9 @@ import fdi.ucm.server.modelComplete.ImportExportPair;
 import fdi.ucm.server.modelComplete.LoadCollection;
 import fdi.ucm.server.modelComplete.collection.CompleteCollection;
 import fdi.ucm.server.modelComplete.collection.CompleteCollectionAndLog;
+import fdi.ucm.server.modelComplete.collection.document.CompleteDocuments;
+import fdi.ucm.server.modelComplete.collection.document.CompleteResourceElementURL;
+import fdi.ucm.server.modelComplete.collection.document.CompleteTextElement;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteGrammar;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteResourceElementType;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteTextElementType;
@@ -212,13 +216,13 @@ public class LoadCollectionMedical extends LoadCollection{
 		HashMap<String,HashMap<String,String>> Sem_Term_CUI=new HashMap<String,HashMap<String,String>>();
 		
 //		try {
-//			
-		File csvFile = new File(getClass().getResource("Reducido.csv").getFile());
+		try {
+		File csvFile = new File(getClass().getResource("Reducido.csv").toURI());
 //			String csvFile = getFolder()+"Reducido.csv";
 	        String line = "";
 	        String cvsSplitBy = ";";
 
-	        try {
+	        
 				
 			
 	        BufferedReader br = new BufferedReader(new FileReader(csvFile));
@@ -235,7 +239,9 @@ public class LoadCollectionMedical extends LoadCollection{
 	            br.close();
 	        } catch (IOException e) {
 	            e.printStackTrace();
-	        }
+	        } catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
 			
 	        HashMap<String, HashSet<String>> Imagenes_List=loadimages();
 			
@@ -732,8 +738,16 @@ public class LoadCollectionMedical extends LoadCollection{
 	            
 			}
 			
+			
+			
+			
 			CompleteGrammar GramDoc=new CompleteGrammar("Report", "Grammar associated to Reports", salida.getCollection());
 			salida.getCollection().getMetamodelGrammar().add(GramDoc);
+			
+			
+			CompleteTextElementType ID=new CompleteTextElementType("Report Id", GramDoc) ;
+			ID.setClassOfIterator(ID);
+			GramDoc.getSons().add(ID);
 			
 			List<CompleteTextElementType> ListUtteranceElem=new LinkedList<CompleteTextElementType>();
 			
@@ -783,8 +797,58 @@ public class LoadCollectionMedical extends LoadCollection{
 			ListTerms.add(TextElement);
 			
 			 List<CompleteTextElementType> Positions= new LinkedList<CompleteTextElementType>();
+			
+			 CompleteTextElementType PositionElement=new CompleteTextElementType("Position", TextElement,GramDoc);
+			 PositionElement.setClassOfIterator(PositionElement);
+			 TextElement.getSons().add(PositionElement);
+				PositionElement.setMultivalued(true);
+				Positions.add(PositionElement);
+				
+			for (int i = 0; i < MaxPos-1; i++) {
+				 CompleteTextElementType PositionElementB=new CompleteTextElementType("Position", TextElement,GramDoc);
+				 PositionElementB.setClassOfIterator(PositionElement);
+				 TextElement.getSons().add(PositionElementB);
+					PositionElementB.setMultivalued(true);
+					Positions.add(PositionElementB);
+			}
+				
+			Term_Positions.put(PositionElement, Positions);	
 			 
-			 //TODO AQUI ME QUEDE CURRANDO
+			
+			
+			for (int i = 0; i < MaxTerm-1; i++) {
+				CompleteTextElementType TextElementB=new CompleteTextElementType("Term", GramDoc);
+				TextElementB.setClassOfIterator(TextElement);
+				GramDoc.getSons().add(TextElementB);
+				TextElementB.setMultivalued(true);
+				ListTerms.add(TextElementB);
+				
+				
+				 List<CompleteTextElementType> PositionsB= new LinkedList<CompleteTextElementType>();
+					
+				 CompleteTextElementType PositionElementB=new CompleteTextElementType("Position", TextElementB,GramDoc);
+				 PositionElementB.setClassOfIterator(PositionElement);
+				 TextElementB.getSons().add(PositionElementB);
+					PositionElementB.setMultivalued(true);
+					PositionsB.add(PositionElementB);
+				
+					for (int j = 0; j < MaxPos-1; j++) {
+						 CompleteTextElementType PositionElementC=new CompleteTextElementType("Position", TextElementB,GramDoc);
+						 PositionElementC.setClassOfIterator(PositionElement);
+						 TextElementB.getSons().add(PositionElementC);
+							PositionElementC.setMultivalued(true);
+							PositionsB.add(PositionElementC);
+					}
+						
+					Term_Positions.put(PositionElementB, PositionsB);		
+					
+				
+			}
+			
+			
+			
+			
+			
 			
 			
 			if (consoleDebug)
@@ -792,9 +856,73 @@ public class LoadCollectionMedical extends LoadCollection{
 				System.out.println(MaxImages+"-"+ListImages.size() );
 				System.out.println(MaxUterancias+"-"+ListUtteranceElem.size());
 				
-				System.out.println(MaxTerm);
-				System.out.println(MaxPos);
+				System.out.println(MaxTerm+"-"+ListTerms.size() );
+				
+				for (Entry<CompleteTextElementType, List<CompleteTextElementType>> elem_pos : Term_Positions.entrySet()) 
+					System.out.println(MaxPos+"-"+elem_pos.getValue().size() );
+				
+				
+				
 				}
+			
+			
+			for (String name : supertablaUtt_list.keySet()){
+				
+				@SuppressWarnings("unchecked")
+				List<String> Imagenes=(List<String>)(List<String>)Imagenes_List.get(name);
+				
+				String icon="";
+				if (Imagenes!=null&&!Imagenes.isEmpty())
+					icon=Imagenes.get(0);
+				
+				 String Texto_general = documentosListTextIn.get(name);
+				CompleteDocuments CD=new CompleteDocuments(salida.getCollection(), name+"//"+Texto_general, icon);
+				salida.getCollection().getEstructuras().add(CD);
+				
+				CompleteTextElement IDElem=new CompleteTextElement(ID, name);
+				CD.getDescription().add(IDElem);
+				
+				for (int i = 0; i < Imagenes.size(); i++) {
+					CompleteResourceElementURL RU=new CompleteResourceElementURL(ListImages.get(i), Imagenes.get(i));
+					CD.getDescription().add(RU);
+				}
+				
+				/**
+				
+				HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_1 = SupertablaUtt.get(name);
+	            HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_2 = supertablaUtt_list.get(name);
+	           
+	          //  Ya tengo las utterancias
+	            
+	            for (String utte_text : tabla_1.keySet()) {
+	            	
+	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_text = tabla_1.get(utte_text);
+	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_count = tabla_2.get(utte_text);
+	            	
+	            	for (String semanticas : semanticas_term_text.keySet()) {
+	            		HashMap<String, HashSet<String>> term_text = semanticas_term_text.get(semanticas);
+	            		HashMap<String, HashSet<String>> term_count = semanticas_term_count.get(semanticas);
+	            		
+	            		if (term_text.keySet().size()>MaxTerm)
+	            			MaxTerm=term_text.keySet().size();
+	            		
+	            		for (String termino : term_text.keySet()) {
+	            			//AQUI NO SE USA
+//							HashSet<String> text = term_text.get(termino);
+							HashSet<String> count = term_count.get(termino);
+							
+							if (count.size()>MaxPos)
+								MaxPos=count.size();
+							
+	            			}
+	            	
+	            	}
+	            }
+	            
+	            */
+			}
+			
+			//AQUI YA YA
 			
 			
 			/**
@@ -1011,9 +1139,10 @@ public class LoadCollectionMedical extends LoadCollection{
 	private HashMap<String, HashSet<String>> loadimages() {
 		JsonReader reader;
 		
-		File jsonfile = new File(getClass().getResource("openi_nlm_nih_gov.json").getFile());
-		
 		try {
+		File jsonfile = new File(getClass().getResource("openi_nlm_nih_gov.json").toURI());
+		
+		
 			reader = new JsonReader(new FileReader(jsonfile));
 			Gson gson = new Gson();
 			HashMap<String, HashSet<String>> Imagenes_List =  gson.fromJson(reader, HashMap.class);
@@ -1024,8 +1153,11 @@ public class LoadCollectionMedical extends LoadCollection{
 			return Imagenes_List;
 			
 		} catch (FileNotFoundException e1) {
-			System.err.println("El archivo no esta, me lo intento descargar");
+			e1.printStackTrace();
 
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			
 		}
 		
 		return new HashMap<String, HashSet<String>>();
