@@ -700,10 +700,11 @@ public class LoadCollectionMedical extends LoadCollection{
 			}
 			
 			
-			
+			HashMap<String, List<String>> termino_semanticas=new HashMap<>();
+			HashMap<String, HashMap<String, HashSet<String>>> termino_utterancia_posiciones=new HashMap<>();
 			int MaxUterancias=0;
-			int MaxTerm=0;
 			int MaxPos=0;
+			int MaxTerm=0;
 			for (String name : supertablaUtt_list.keySet()){
 				HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_1 = SupertablaUtt.get(name);
 	            HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_2 = supertablaUtt_list.get(name);
@@ -719,23 +720,51 @@ public class LoadCollectionMedical extends LoadCollection{
 	            		HashMap<String, HashSet<String>> term_text = semanticas_term_text.get(semanticas);
 	            		HashMap<String, HashSet<String>> term_count = semanticas_term_count.get(semanticas);
 	            		
-	            		if (term_text.keySet().size()>MaxTerm)
-	            			MaxTerm=term_text.keySet().size();
 	            		
 	            		for (String termino : term_text.keySet()) {
-	            			//AQUI NO SE USA
-//							HashSet<String> text = term_text.get(termino);
+
 							HashSet<String> count = term_count.get(termino);
 							
-							if (count.size()>MaxPos)
-								MaxPos=count.size();
+							List<String> seman  = termino_semanticas.get(termino);
+							if (seman==null)
+								seman=new LinkedList<String>();
+							
+							seman.add(semanticas);
+							
+							termino_semanticas.put(termino, seman);
+							
+							
+							HashMap<String, HashSet<String>> Utterancia_posiciones = termino_utterancia_posiciones.get(termino);
+							
+							if (Utterancia_posiciones==null)
+								Utterancia_posiciones=new HashMap<String, HashSet<String>>();
+							
+							Utterancia_posiciones.put(utte_text,new HashSet<String>(count));
+							
+						
 							
 	            			}
+	            		
+	            		
 	            	
 	            	}
 	            }
 	            
 	            
+			}
+			
+			MaxTerm=termino_semanticas.keySet().size();
+			
+			
+			for (Entry<String, HashMap<String, HashSet<String>>> term_ute_pos : termino_utterancia_posiciones.entrySet()) {
+				int acum=0;
+				for (Entry<String, HashSet<String>> ute_pos : term_ute_pos.getValue().entrySet()) {
+					acum=acum+ute_pos.getValue().size();
+				}
+				
+				if (acum>MaxPos)
+					MaxPos=acum;
+				
 			}
 			
 			
@@ -890,16 +919,124 @@ public class LoadCollectionMedical extends LoadCollection{
 
 				HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_1 = SupertablaUtt.get(name);
 	            HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_2 = supertablaUtt_list.get(name);
-	           
+	           	            
+	            
+	            HashMap<String, Integer> uterancia_nTerms=new HashMap<String, Integer>();
+	            
 	            List<String> utteran=new LinkedList<>(tabla_1.keySet());
 	            for (int i = 0; i < utteran.size(); i++) {
 	            	CompleteTextElement UteElem=new CompleteTextElement(ListUtteranceElem.get(i), utteran.get(i));
-					CD.getDescription().add(UteElem);
+					CD.getDescription().add(UteElem);	
+					
+					
+					List<String> TokenWords_frase=new LinkedList<String>();
+					String frase=utteran.get(i);
+//					String fraseSucia=new String(frase.trim()+".");
+					frase=frase.trim();
+					frase=frase.replace(",", ", ");
+					frase=frase.replace(" ,", ",");
+					frase=frase.replace(";", "; ");
+					frase=frase.replace(" ;", ";");
+					frase=frase.replace("/", "/ ");
+					frase=frase.replace(" /", "/");
+					frase=frase.replace("-", "- ");
+					frase=frase.replace(" -", "-");
+					frase=frase.replace("  ", " ");
+						String[] palabras = frase.split(" ");
+						for (String palabra : palabras) {
+							if (!palabra.trim().isEmpty())
+							{
+							TokenWords_frase.add(palabra);
+							}
+						}
+					frase=frase+".";
+					
+					uterancia_nTerms.put(utteran.get(i),TokenWords_frase.size());
+					
+					
+				}
+	            
+	            List<String> Terminos=new LinkedList<>(termino_semanticas.keySet());
+	            
+	            for (int i = 0; i < Terminos.size(); i++) {
+	            	String termino = Terminos.get(i);
+	            	
+	            	CompleteTextElement TermeElem=new CompleteTextElement(ListTerms.get(i), termino);
+					CD.getDescription().add(TermeElem);
+					
+					HashMap<String, HashSet<String>> uter_pos = termino_utterancia_posiciones.get(termino);
+					
+					
+	            	
+//	            	List<String> Semanticas = termino_semanticas.get(Termino);
+//	            	termino_utterancia_posiciones
+					
+					
+					
+				}
+	            
+	            
+	            
+	            /*
+	             * 	
+					List<String> TokenWords_frase=new LinkedList<String>();
+					String frase=utteran.get(i);
+					String fraseSucia=new String(frase.trim()+".");
+					frase=frase.trim();
+					frase=frase.replace(",", ", ");
+					frase=frase.replace(" ,", ",");
+					frase=frase.replace(";", "; ");
+					frase=frase.replace(" ;", ";");
+					frase=frase.replace("/", "/ ");
+					frase=frase.replace(" /", "/");
+					frase=frase.replace("-", "- ");
+					frase=frase.replace(" -", "-");
+					frase=frase.replace("  ", " ");
+						String[] palabras = frase.split(" ");
+						for (String palabra : palabras) {
+							if (!palabra.trim().isEmpty())
+							{
+							TokenWords_frase.add(palabra);
+							}
+						}
+					frase=frase+".";
+
 					
 					HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_text = tabla_1.get(utteran.get(i));
 	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_count = tabla_2.get(utteran.get(i));
-					
-				}
+	            	
+	            	for (String semanticas : semanticas_term_text.keySet()) {
+	            		HashMap<String, HashSet<String>> term_text = semanticas_term_text.get(semanticas);
+	            		HashMap<String, HashSet<String>> term_count = semanticas_term_count.get(semanticas);
+	            		
+	            		
+	            		List<String> terminosValidos=new LinkedList<String>(term_text.keySet());
+	            		
+	            		
+	            		for (int j = 0; j < terminosValidos.size(); j++) {
+							String termino = terminosValidos.get(j);
+							
+							CompleteTextElement TermeElem=new CompleteTextElement(ListTerms.get(j), termino);
+							CD.getDescription().add(TermeElem);
+							
+							
+//							HashSet<String> text = term_text.get(termino);
+							List<String> count = new LinkedList<String>(term_count.get(termino));
+							
+							List<CompleteTextElementType> Soucion = Term_Positions.get(termino);
+							
+							for (int k = 0; k < count.size(); k++) {
+								CompleteTextElement PosElem=new CompleteTextElement(Soucion.get(k), count.get(k));
+								CD.getDescription().add(PosElem);
+							}
+							
+							
+							
+	            			}
+	            	
+	            	}
+	             * 
+	             * */
 	            
 	          //  Ya tengo las utterancias
 	            
