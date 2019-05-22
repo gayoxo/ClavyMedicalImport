@@ -722,12 +722,15 @@ public class LoadCollectionMedical extends LoadCollection{
 	            if (tabla_1.keySet().size()>MaxUterancias)
 	            	MaxUterancias=tabla_1.keySet().size();
 	            
+	            
+	            HashSet<String> TotalTerms=new HashSet<>();
+	            
 	            for (String utte_text : tabla_1.keySet()) {
 	            	
 	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_text = tabla_1.get(utte_text);
 	            	HashMap<String, HashMap<String, HashSet<String>>> semanticas_term_count = tabla_2.get(utte_text);
 	            	
-	            	HashSet<String> TotalTerms=new HashSet<>();
+	            	
 	            	
 	            	for (String semanticas : semanticas_term_text.keySet()) {
 	            		HashMap<String, HashSet<String>> term_text = semanticas_term_text.get(semanticas);
@@ -754,12 +757,12 @@ public class LoadCollectionMedical extends LoadCollection{
 	            		
 	            	
 	            	}
-	            	
-	            	
-	            	if (MaxTerm<TotalTerms.size())
-            			MaxTerm=TotalTerms.size();
+
 	            	
 	            }
+	            
+	            if (MaxTerm<TotalTerms.size())
+        			MaxTerm=TotalTerms.size();
 	            
 	            
 	            for (Entry<String, HashMap<String, HashSet<String>>> term_ute_pos : termino_utterancia_posiciones.entrySet()) {
