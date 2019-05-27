@@ -19,9 +19,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -785,6 +782,31 @@ public class LoadCollectionMedical extends LoadCollection{
 	            	MaxUterancias=string.getValue().size();
 			}
 			
+			MaxSem=0;
+			for (String name : supertablaUtt_list.keySet()){
+			  HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_2 = supertablaUtt_list.get(name);
+			  HashMap<String, List<String>> Term_Seman=new HashMap<String, List<String>>();
+			 
+            for (Entry<String, HashMap<String, HashMap<String, HashSet<String>>>> utter_seman_term_pos_entry : tabla_2.entrySet()) 
+				for (Entry<String, HashMap<String, HashSet<String>>> seman_term_pos_entry : utter_seman_term_pos_entry.getValue().entrySet()) 
+					for (Entry<String, HashSet<String>> term_pos_entry : seman_term_pos_entry.getValue().entrySet()) {
+						List<String> semanticas_term = Term_Seman.get(term_pos_entry.getKey());
+						if (semanticas_term==null)
+							semanticas_term=new LinkedList<String>();
+						
+						semanticas_term.add(seman_term_pos_entry.getKey());
+						Term_Seman.put(term_pos_entry.getKey(), semanticas_term);
+					
+					}
+            
+            for (Entry<String, List<String>> tesrm_seman : Term_Seman.entrySet()) {
+            	 if (MaxSem<tesrm_seman.getValue().size())
+            		 MaxSem=tesrm_seman.getValue().size();
+			}
+           
+            	
+			}
+			
 			
 			
 			
@@ -836,6 +858,7 @@ public class LoadCollectionMedical extends LoadCollection{
 
 			List<CompleteTextElementType> ListTerms=new LinkedList<CompleteTextElementType>();
 			HashMap<CompleteTextElementType, List<CompleteTextElementType>> Term_Positions=new HashMap<CompleteTextElementType, List<CompleteTextElementType>>();
+			HashMap<CompleteTextElementType, List<CompleteTextElementType>> Term_Semantica=new HashMap<CompleteTextElementType, List<CompleteTextElementType>>();
 			
 			
 			CompleteTextElementType TextElement=new CompleteTextElementType("Term", GramDoc);
@@ -862,8 +885,37 @@ public class LoadCollectionMedical extends LoadCollection{
 				
 			Term_Positions.put(TextElement, Positions);	
 			 
+			List<CompleteTextElementType> Semanticas= new LinkedList<CompleteTextElementType>();
+			 
+			 CompleteTextElementType SemanticElement=new CompleteTextElementType("Semantica", TextElement,GramDoc);
+			 SemanticElement.setClassOfIterator(SemanticElement);
+			 TextElement.getSons().add(SemanticElement);
+			 SemanticElement.setMultivalued(true);
+			 Semanticas.add(SemanticElement);
+			 	
+			 CompleteTextElementType CUIElement=new CompleteTextElementType("CUI", TextElement,GramDoc);
+			 CUIElement.setClassOfIterator(CUIElement);
+			 SemanticElement.getSons().add(CUIElement);
+			 CUIElement.setMultivalued(true);
+			 
+			 
+			 for (int i = 0; i < MaxSem-1; i++) {
+				 CompleteTextElementType SemanticElement1=new CompleteTextElementType("Semantica", TextElement,GramDoc);
+				 SemanticElement1.setClassOfIterator(SemanticElement);
+				 TextElement.getSons().add(SemanticElement1);
+				 SemanticElement1.setMultivalued(true);
+				 Semanticas.add(SemanticElement1);
+				 
+				 CompleteTextElementType CUIElement1=new CompleteTextElementType("CUI", TextElement,GramDoc);
+				 CUIElement1.setClassOfIterator(CUIElement);
+				 SemanticElement1.getSons().add(CUIElement1);
+				 CUIElement1.setMultivalued(true);
+				 
+			 }
+			 
 			
-			
+			 Term_Semantica.put(TextElement, Semanticas);	
+			 
 			for (int i = 0; i < MaxTerm-1; i++) {
 				CompleteTextElementType TextElementB=new CompleteTextElementType("Term", GramDoc);
 				TextElementB.setClassOfIterator(TextElement);
@@ -883,6 +935,27 @@ public class LoadCollectionMedical extends LoadCollection{
 					}
 						
 					Term_Positions.put(TextElementB, PositionsB);		
+					
+					
+					List<CompleteTextElementType> SemanticasB= new LinkedList<CompleteTextElementType>();
+					 
+					 
+					 for (int j = 0; j < MaxPos; j++) {
+						 CompleteTextElementType SemanticElementC=new CompleteTextElementType("Semantica", TextElementB,GramDoc);
+						 SemanticElementC.setClassOfIterator(SemanticElement);
+						 TextElementB.getSons().add(SemanticElementC);
+						 SemanticElementC.setMultivalued(true);
+						 SemanticasB.add(SemanticElementC);
+						 
+						 CompleteTextElementType CUIElement1=new CompleteTextElementType("CUI", TextElement,GramDoc);
+						 CUIElement1.setClassOfIterator(CUIElement);
+						 SemanticElementC.getSons().add(CUIElement1);
+						 CUIElement1.setMultivalued(true);
+						 
+					 }
+					 
+					
+					 Term_Semantica.put(TextElementB, SemanticasB);	
 					
 				
 			}
@@ -1013,12 +1086,24 @@ public class LoadCollectionMedical extends LoadCollection{
 	           for (int j = 0; j < ListTermsFin.size(); j++) {
 				String term = ListTermsFin.get(j);
 				List<Integer> Posiciones = new LinkedList<>(Term_pos.get(term));
-					List<String> Semanticas = Term_Seman.get(term);
+					List<String> SemanticasBis = Term_Seman.get(term);
 					
-					for (String semanticas : Semanticas) {
+					List<CompleteTextElementType> SoucionSem = Term_Semantica.get(ListTerms.get(j));
+					
+					for (int i = 0; i < SemanticasBis.size(); i++){
+						String semanticas = SemanticasBis.get(i);
+						CompleteTextElement PosElemElem=new CompleteTextElement(SoucionSem.get(i), semanticas);
+						CD.getDescription().add(PosElemElem);
+						
 						if (Sem_Term_CUI.get(semanticas)!=null&&
 							Sem_Term_CUI.get(semanticas).get(term)!=null)
 					{
+								
+								CompleteTextElement PosElemElemCUI=new CompleteTextElement((CompleteTextElementType) SoucionSem.get(i).getSons().get(0), Sem_Term_CUI.get(semanticas).get(term));
+								CD.getDescription().add(PosElemElemCUI);
+							
+							
+							
 							//HABRA QUE GENERAR SEMANTICAS POR TERMINO Y LUEGO METERSELAS
 //						String CUIValue = Sem_Term_CUI.get(semanticas).get(termino);
 //						Text cui_string = document.createTextNode(CUIValue);
