@@ -216,7 +216,7 @@ public class LoadCollectionMedical extends LoadCollection{
 		HashMap<String, String> TablaSemanticaTextoInversa = new HashMap<String,String>();
 		HashMap<String,List<String>> TablaSemanticaTextoValidas=new HashMap<String,List<String>>();
 		HashMap<String,HashMap<String,String>> Sem_Term_CUI=new HashMap<String,HashMap<String,String>>();
-		HashMap<String, SortedSet<String>> SupertablaOrden=new HashMap<String, SortedSet<String>>();
+		HashMap<String, List<String>> SupertablaOrden=new HashMap<String, List<String>>();
 		
 		
 //		try {
@@ -318,10 +318,16 @@ public class LoadCollectionMedical extends LoadCollection{
 	            	String Doc="unknown";
 	            	String Utterance="";
 	            	
+	            	
+	            	
+	            	
 	            	while(! (in.isEndElement() && in.getLocalName().equals("MMO"))) {
 	            		
 	            		 if(in.isStartElement() && in.getLocalName().equals("PMID")) {
 	            			 Doc=in.getElementText();
+	            			 List<String> listaUte=procesaorden(Doc,documentosListTextIn);
+	            			 SupertablaOrden.put(Doc, listaUte);
+								
 	            			 while (! (in.isEndElement() && in.getLocalName().equals("PMID")))
 	                			 {
 	            				 in.next();
@@ -535,7 +541,7 @@ public class LoadCollectionMedical extends LoadCollection{
 							HashMap<String, List<HashMap<String, HashSet<String>>>> ListaSemanticaHsh = Supertabla.get(Doc);
 							HashMap<String, HashMap<String, HashMap<String,HashSet<String>>>> ListaSemanticaHshUtt = SupertablaUtt.get(Doc);
 							HashMap<String, HashMap<String, HashMap<String,HashSet<String>>>> ListaSemanticaHshUtt_List = supertablaUtt_list.get(Doc);
-							SortedSet<String> Uteorden=SupertablaOrden.get(Doc);
+
 							
 							if (ListaSemanticaHsh==null)
 								ListaSemanticaHsh=new HashMap<String, List<HashMap<String, HashSet<String>>>>();
@@ -546,8 +552,6 @@ public class LoadCollectionMedical extends LoadCollection{
 							if (ListaSemanticaHshUtt_List==null)
 								ListaSemanticaHshUtt_List=new HashMap<String, HashMap<String, HashMap<String,HashSet<String>>>>();
 							
-							if (Uteorden==null)
-								Uteorden=new TreeSet<String>();
 							
 							HashMap<String, HashMap<String, HashSet<String>>> ListaSemanticaHsSem = ListaSemanticaHshUtt.get(Utterance);
 							if (ListaSemanticaHsSem==null)
@@ -675,14 +679,12 @@ public class LoadCollectionMedical extends LoadCollection{
 								}
 							}
 							
-							Uteorden.add(Utterance);
-							
+		
 							ListaSemanticaHshUtt.put(Utterance, ListaSemanticaHsSem);
 							ListaSemanticaHshUtt_List.put(Utterance, ListaSemanticaHsSem_list);
 							Supertabla.put(Doc, ListaSemanticaHsh);
 							SupertablaUtt.put(Doc, ListaSemanticaHshUtt);
 							supertablaUtt_list.put(Doc, ListaSemanticaHshUtt_List);
-							SupertablaOrden.put(Doc, Uteorden);
 							
 						}
 	               			 
@@ -719,8 +721,7 @@ public class LoadCollectionMedical extends LoadCollection{
 				HashMap<String, HashMap<String, HashSet<String>>> termino_utterancia_posiciones=new HashMap<>();
 				HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_1 = SupertablaUtt.get(name);
 	            HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_2 = supertablaUtt_list.get(name);
-	            if (tabla_1.keySet().size()>MaxUterancias)
-	            	MaxUterancias=tabla_1.keySet().size();
+	            
 	            
 	            
 	            HashSet<String> TotalTerms=new HashSet<>();
@@ -778,7 +779,10 @@ public class LoadCollectionMedical extends LoadCollection{
 	            
 			}
 			
-			
+			for (Entry<String, List<String>> string : SupertablaOrden.entrySet()) {
+				if (string.getValue().size()>MaxUterancias)
+	            	MaxUterancias=string.getValue().size();
+			}
 			
 			
 			
@@ -1374,6 +1378,18 @@ public class LoadCollectionMedical extends LoadCollection{
 	}
 	
 	
+
+	private LinkedList<String> procesaorden(String doc, HashMap<String, String> documentosListTextIn) {
+		String Text=documentosListTextIn.get(doc);
+		String[] seperado=Text.split("\\.");
+		LinkedList<String> Salida= new LinkedList<String>();
+		for (String string : seperado) {
+			if (!string.trim().isEmpty())
+				Salida.add(string.trim()+".");
+		} 
+		return Salida;
+	}
+
 
 	private static void LoadSampleTXT(List<String> documentosList, HashMap<String,String> documentosListText, String filenamesample) throws FileNotFoundException {
 		
