@@ -717,6 +717,7 @@ public class LoadCollectionMedical extends LoadCollection{
 			int MaxUterancias=0;
 			int MaxPos=0;
 			int MaxTerm=0;
+			int MaxSem=0;
 			for (String name : supertablaUtt_list.keySet()){
 				HashMap<String, HashMap<String, HashSet<String>>> termino_utterancia_posiciones=new HashMap<>();
 				HashMap<String, HashMap<String, HashMap<String, HashSet<String>>>> tabla_1 = SupertablaUtt.get(name);
@@ -1013,6 +1014,18 @@ public class LoadCollectionMedical extends LoadCollection{
 				String term = ListTermsFin.get(j);
 				List<Integer> Posiciones = new LinkedList<>(Term_pos.get(term));
 					List<String> Semanticas = Term_Seman.get(term);
+					
+					for (String semanticas : Semanticas) {
+						if (Sem_Term_CUI.get(semanticas)!=null&&
+							Sem_Term_CUI.get(semanticas).get(term)!=null)
+					{
+							//HABRA QUE GENERAR SEMANTICAS POR TERMINO Y LUEGO METERSELAS
+//						String CUIValue = Sem_Term_CUI.get(semanticas).get(termino);
+//						Text cui_string = document.createTextNode(CUIValue);
+//						cuiType.appendChild(cui_string);
+					}
+					}
+					
 					
 					CompleteTextElement TermeElem=new CompleteTextElement(ListTerms.get(j), term);
 					CD.getDescription().add(TermeElem);
