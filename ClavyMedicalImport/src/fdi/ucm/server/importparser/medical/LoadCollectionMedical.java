@@ -896,7 +896,6 @@ public class LoadCollectionMedical extends LoadCollection{
 			 CompleteTextElementType CUIElement=new CompleteTextElementType("CUI", TextElement,GramDoc);
 			 CUIElement.setClassOfIterator(CUIElement);
 			 SemanticElement.getSons().add(CUIElement);
-			 CUIElement.setMultivalued(true);
 			 
 			 
 			 for (int i = 0; i < MaxSem-1; i++) {
@@ -909,7 +908,6 @@ public class LoadCollectionMedical extends LoadCollection{
 				 CompleteTextElementType CUIElement1=new CompleteTextElementType("CUI", TextElement,GramDoc);
 				 CUIElement1.setClassOfIterator(CUIElement);
 				 SemanticElement1.getSons().add(CUIElement1);
-				 CUIElement1.setMultivalued(true);
 				 
 			 }
 			 
@@ -950,7 +948,6 @@ public class LoadCollectionMedical extends LoadCollection{
 						 CompleteTextElementType CUIElement1=new CompleteTextElementType("CUI", TextElement,GramDoc);
 						 CUIElement1.setClassOfIterator(CUIElement);
 						 SemanticElementC.getSons().add(CUIElement1);
-						 CUIElement1.setMultivalued(true);
 						 
 					 }
 					 
